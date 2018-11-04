@@ -17,38 +17,43 @@ script.on_event(defines.events.on_runtime_mod_setting_changed,
 end)
 
 local function is_long_distance_pole(entity)
-   if entity.type != "electric-pole" then
-      return false
-   elseif entity.supply_area_distance > 2 then
-      return false
-   elseif entity.maximum_wire_distance < 30 then
+   if entity.type ~= "electric-pole" then
       return false
    else
-      return true
+      local poleproto = entity.prototype
+      if poleproto.supply_area_distance > 2 then
+         return false
+      elseif poleproto.max_wire_distance < 30 then
+         return false
+      else
+         return true
+      end
    end
 end
 
 local function has_red_wire(pole)
-   local redwires = pole.neighbors["red"]
+   local redwires = pole.neighbours["red"]
    return (redwires ~= nil) and (#redwires > 0)
+end
 
 local function has_green_wire(pole)
-   local greenwires = pole.neighbors["green"]
-   return (redwires ~= nil) and (#redwires > 0)
+   local greenwires = pole.neighbours["green"]
+   return (greenwires ~= nil) and (#greenwires > 0)
+end
 
 script.on_event(defines.events.on_built_entity, function(event)
-   if not conf_enable then
+   if not conf_enable[event.player_index] then
       return
    end
    local entity = event.created_entity
    if (not entity) or (not is_long_distance_pole(entity)) then
       return
    end
-   local copperbuddies = entity.neighbors["copper"]
+   local copperbuddies = entity.neighbours["copper"]
    if not copperbuddies then
       return
    end
-   local otherpole
+   local otherpole = nil
    local newconnects = {}
    for _, otherpole in pairs(copperbuddies) do
       if is_long_distance_pole(otherpole) then
@@ -64,4 +69,6 @@ script.on_event(defines.events.on_built_entity, function(event)
    end
    local newconnect
    for _, newconnect in pairs(newconnects) do
-      entity.connect_neighbor(newconnect)
+      entity.connect_neighbour(newconnect)
+   end
+end)
