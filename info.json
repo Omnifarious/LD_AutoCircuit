@@ -1,11 +1,11 @@
 {
     "name": "LD_AutoCircuit",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "title": "LD Auto Circuit",
     "author": "Omnifarious",
     "contact": "eric-factorio@omnifarious.org",
     "homepage": "",
-    "factorio_version": "0.16",
-    "dependencies": ["base >= 0.16"],
+    "factorio_version": "0.17",
+    "dependencies": ["base >= 0.17"],
     "description": "This mod will automatically string red and green wire over long distance poles."
 }
