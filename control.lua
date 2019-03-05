@@ -1,20 +1,14 @@
-local conf_enable = setmetatable({}, {
-	__index = function(self, id)
-		local v = settings.get_player_settings(game.players[id])["ld_autocircuit-enabled"].value
-		rawset(self, id, v)
-		return v
-	end
-})
+function OnShortCut(event)
+   if event.prototype_name == "ld-autocircuit-shortcut" then
+      local player = game.players[event.player_index]
+      if player.is_shortcut_available("ld-autocircuit-shortcut") then
+         local toggled = player.is_shortcut_toggled("ld-autocircuit-shortcut")
+         player.set_shortcut_toggled("ld-autocircuit-shortcut", not toggled)
+      end
+   end
+end
 
-script.on_event(defines.events.on_runtime_mod_setting_changed,
-                function(event)
-                   if not event or not event.setting then
-                      return
-                   end
-                   if event.setting == "ld_autocircuit-enabled" then
-                      conf_enable[event.player_index] = nil
-                   end
-end)
+script.on_event(defines.events.on_lua_shortcut, OnShortCut)
 
 local function is_long_distance_pole(entity)
    if entity.type ~= "electric-pole" then
@@ -41,8 +35,8 @@ local function has_green_wire(pole)
    return (greenwires ~= nil) and (#greenwires > 0)
 end
 
-script.on_event(defines.events.on_built_entity, function(event)
-   if not conf_enable[event.player_index] then
+function BuiltSomething(event)
+   if not game.players[event.player_index].is_shortcut_toggled("ld-autocircuit-shortcut") then
       return
    end
    local entity = event.created_entity
@@ -71,4 +65,6 @@ script.on_event(defines.events.on_built_entity, function(event)
    for _, newconnect in pairs(newconnects) do
       entity.connect_neighbour(newconnect)
    end
-end)
+end
+
+script.on_event(defines.events.on_built_entity, BuiltSomething)

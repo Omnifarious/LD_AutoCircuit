@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.2
+Date: 26. 02. 2019
+  Major Features:
+    - Remove mod config setting and add shortcut toggle (like the
+      roboport toggle) to turn behavior on and off.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 26. 02. 2019
   Bugfixes:
