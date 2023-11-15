@@ -11,18 +11,14 @@ end
 script.on_event(defines.events.on_lua_shortcut, OnShortCut)
 
 local function is_long_distance_pole(entity)
-   if entity.type ~= "electric-pole" then
-      return false
-   else
-      local poleproto = entity.prototype
-      if poleproto.supply_area_distance > 2 then
-         return false
-      elseif poleproto.max_wire_distance < 30 then
-         return false
-      else
-         return true
-      end
-   end
+   local poleproto = entity.prototype
+   return (poleproto.supply_area_distance <= 2
+           or poleproto.max_wire_distance >= 30)
+end
+
+local function is_viable_for_connection(event)
+   local connect_long_only = settings.get_player_settings(event.player_index)["ld-connect-long-distance-poles-only"].value
+   return not connect_long_only or is_long_distance_pole(event.created_entity)
 end
 
 local function has_red_wire(pole)
@@ -35,36 +31,44 @@ local function has_green_wire(pole)
    return (greenwires ~= nil) and (#greenwires > 0)
 end
 
-function BuiltSomething(event)
+function OnBuiltElectricPole(event)
    if not game.players[event.player_index].is_shortcut_toggled("ld-autocircuit-shortcut") then
       return
    end
    local entity = event.created_entity
-   if (not entity) or (not is_long_distance_pole(entity)) then
+   if (not entity) or (not is_viable_for_connection(event)) then
       return
    end
+
    local copperbuddies = entity.neighbours["copper"]
    if not copperbuddies then
       return
    end
-   local otherpole = nil
+
+   local connect_same_only = settings.get_player_settings(event.player_index)["ld-connect-same-type-poles-only"].value
    local newconnects = {}
    for _, otherpole in pairs(copperbuddies) do
-      if is_long_distance_pole(otherpole) then
-         if has_red_wire(otherpole) then
-            newconnects[#newconnects + 1] = {wire = defines.wire_type.red,
-                                             target_entity = otherpole}
-         end
-         if has_green_wire(otherpole) then
-            newconnects[#newconnects + 1] = {wire = defines.wire_type.green,
-                                             target_entity = otherpole}
-         end
+      if not is_viable_for_connection(event) then
+         goto continue
       end
+
+      if connect_same_only and entity.prototype ~= otherpole.prototype then
+         goto continue
+      end
+
+      if has_red_wire(otherpole) then
+         newconnects[#newconnects + 1] = {wire = defines.wire_type.red,
+                                          target_entity = otherpole}
+      end
+      if has_green_wire(otherpole) then
+         newconnects[#newconnects + 1] = {wire = defines.wire_type.green,
+                                          target_entity = otherpole}
+      end
+      ::continue::
    end
-   local newconnect
    for _, newconnect in pairs(newconnects) do
       entity.connect_neighbour(newconnect)
    end
 end
 
-script.on_event(defines.events.on_built_entity, BuiltSomething)
+script.on_event(defines.events.on_built_entity, OnBuiltElectricPole,  {{ filter = "type", type = "electric-pole"}})

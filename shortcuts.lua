@@ -1,3 +1,8 @@
+local technology_to_unlock
+if data.raw["technology"]["circuit-network"] then
+    technology_to_unlock = "circuit-network"
+end
+
 data:extend(
 {
    {
@@ -5,7 +10,7 @@ data:extend(
       name = "ld-autocircuit-shortcut",
       order = "zzz",
       action = "lua",
-      technology_to_unlock = "circuit-network",
+      technology_to_unlock = technology_to_unlock,
       toggleable = true,
       icon =
          {
