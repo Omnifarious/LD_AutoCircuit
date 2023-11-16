@@ -8,7 +8,7 @@ data:extend({
 	},
 	{
 		type = "bool-setting",
-		name = "ld-connect-same-type-poles",
+		name = "ld-connect-same-type-poles-only",
 		setting_type = "runtime-per-user",
 		default_value = false,
 		order = "b"
